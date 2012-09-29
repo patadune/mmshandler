@@ -2,21 +2,9 @@
 
 <?php
 
-$server = "imap.gmail.com";
-$port = "993";
-$imap_params = "/imap/ssl";
-$mailbox = "{".$server.":".$port.$imap_params."}INBOX";
+require_once('core.php');
 
-$username = "USERNAME";
-$password = "PASSWORD";
-
-$fetch_options = FT_PEEK;
-
-$structures = NULL;			//	Pour chaque mail, contient la structure, permettant d'extraire les données
-$data = NULL;				//	Contient les données ainsi que leur type
-$post_parameters = NULL;	//	Contient les paramètres qui seront POSTés à l'API Tumblr
-
-$imap = imap_open($mailbox, $username, $password);
+$imap = Imap::open();
 
 //	Récupère le nombre de messages sur la boîte mail
 
@@ -62,7 +50,7 @@ foreach($structures as $msgNo => $structure) {
 					//	echo $part->parameters[1]->value . "<br />";
 					
 					$data[$partNo]['type'] = 'text';
-					$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, $fetch_options));
+					$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, Imap::fetch_options));
 					
 					// $file = fopen("/home/remi/www/mails/".$part->parameters[1]->value, "w");
 					// fwrite($file, $data[$partNo]['data']);
@@ -159,15 +147,6 @@ foreach($structures as $msgNo => $structure) {
 				break;
 		}
 	}
-	
-	
-	
-	// Load the library
-
-	require_once('models/TumblrOAuth.php');
-
-	// Define the needed keys
-	require_once('config.php');
 
 	// Start a new instance of TumblrOAuth, overwriting the old one.
 	// This time it will need our Access Token and Secret instead of our Request Token and Secret
