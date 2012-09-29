@@ -164,10 +164,10 @@ foreach($structures as $msgNo => $structure) {
 	
 	// Load the library
 
-	require_once('oauth/tumblroauth/tumblroauth.php');
+	require_once('models/TumblrOAuth.php');
 
 	// Define the needed keys
-	require_once('oauth/config.php');
+	require_once('config.php');
 
 	// Start a new instance of TumblrOAuth, overwriting the old one.
 	// This time it will need our Access Token and Secret instead of our Request Token and Secret
@@ -196,6 +196,6 @@ foreach($structures as $msgNo => $structure) {
 
 imap_close($imap);
 
-die($msgProcessed." MMS procedeed !");
+die($msgProcessed." MMS proceeded !");
 
 ?>
