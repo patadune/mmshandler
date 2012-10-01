@@ -4,7 +4,7 @@ $debug = TRUE;
 
 require_once('core.php');
 
-Model::load('Model');
+Model::load('Imap');
 $imap = Imap::open();
 
 //	Récupère le nombre de messages sur la boîte mail
@@ -23,7 +23,6 @@ for($i = 0; $i < $msgNbr; $i++) {
 	if($sender == "MAILSENDER" && $readStatus == "U") {$structures[$i + 1] = imap_fetchstructure($imap, $i + 1);}
 }
 
-//	
 if(empty($structures)) {
 	die("No new MMS !");
 }
