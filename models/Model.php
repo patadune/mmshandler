@@ -7,7 +7,7 @@ class Model {
         $filename = ROOT.'models/'.$name.".php";
         if(file_exists($filename)) {
             require($filename);
-            return new $name();
+            // return new $name();
         } else {
             echo "Class not found !";
         }

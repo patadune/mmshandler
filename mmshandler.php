@@ -1,6 +1,6 @@
-#!/usr/bin/php
-
 <?php
+
+$debug = TRUE;
 
 require_once('core.php');
 
@@ -124,6 +124,7 @@ foreach($structures as $msgNo => $structure) {
 
 	// Start a new instance of TumblrOAuth, overwriting the old one.
 	// This time it will need our Access Token and Secret instead of our Request Token and Secret
+	Model::load('TumblrOAuth');
 	$tum_oauth = new TumblrOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
 
 	// You don't actuall have to pass a full URL,  TukmblrOAuth will complete the URL for you.
@@ -131,8 +132,10 @@ foreach($structures as $msgNo => $structure) {
 	
 	$url = "http://api.tumblr.com/v2/blog/$blog_name/post";
 
-	$blog_post = $tum_oauth->post($url, $post_parameters);
-
+	if(!$debug) {
+		$blog_post = $tum_oauth->post($url, $post_parameters);
+	}
+	
 	if (201 == $tum_oauth->http_code) {
 		$msgProcessed++;
 		imap_setflag_full($imap, $msgNo, "\\Seen");
