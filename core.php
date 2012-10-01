@@ -6,6 +6,4 @@ require_once(ROOT.'config.php');
 
 require_once(ROOT.'models/Model.php');
 
-Model::load('Imap');
-
 ?>

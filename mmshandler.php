@@ -4,6 +4,7 @@ $debug = TRUE;
 
 require_once('core.php');
 
+Model::load('Model');
 $imap = Imap::open();
 
 //	Récupère le nombre de messages sur la boîte mail
