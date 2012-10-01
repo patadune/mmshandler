@@ -6,21 +6,20 @@ require_once('core.php');
 
 $imap = Imap::open();
 
-//	Récupère le nombre de messages sur la boîte mail
+//	RÃ©cupÃ¨re le nombre de messages sur la boÃ®te mail
 
 $msgNbr = imap_num_msg($imap);
 $msgProcessed = 0;
 
-//	Récupère la structure des mails dont l'expéditeur est MAILSENDER (soit un MMS (en théorie))
+//	RÃ©cupÃ¨re la structure des mails dont l'expÃ©diteur est MAILSENDER (soit un MMS (en thÃ©orie))
 
 for($i = 0; $i < $msgNbr; $i++) {
 	
 	$headers = imap_headerinfo($imap, $i + 1);
 	$sender = $headers->senderaddress;
 	$readStatus = $headers->Unseen;
-	if($sender == "MAILSENDER" && $readStatus == "U") {
-		$structures[$i + 1] = imap_fetchstructure($imap, $i + 1);
-	}
+	
+	if($sender == "MAILSENDER" && $readStatus == "U") {$structures[$i + 1] = imap_fetchstructure($imap, $i + 1);}
 }
 
 //	
@@ -30,12 +29,10 @@ if(empty($structures)) {
 
 foreach($structures as $msgNo => $structure) {
 	
-	//	echo "<h3>Mail n°" . $msgNo . " !</h3>";
+	//	echo "<h3>Mail nÂ°" . $msgNo . " !</h3>";
 	//	print_r(imap_headerinfo($imap, $msgNo));
 	$headers = imap_headerinfo($imap, $msgNo);
-	if(isset($headers->subject)) {
-		$subject = $headers->subject;
-	}
+	if(isset($headers->subject)) {$subject = $headers->subject;}
 	
 	//	$post_parameters['date'] = $headers->date;
 	//	$post_parameters['date'] = strtotime($headers->date);
@@ -43,94 +40,71 @@ foreach($structures as $msgNo => $structure) {
 	
 	foreach($structure->parts as $partNo => $part) {
 		
+		/**
+		 *	Types des parties de mails
+		 *	==========================
+		 *
+		 *	*Type 0 : text
+		 *	Type 1 : multipart
+		 *	Type 2 : message
+		 *	Type 3 : application
+		 *	*Type 4 : audio
+		 *	*Type 5 : image
+		 *	*Type 6 : video
+		 *	Type 7 : other
+		 *
+		 **/
+		
  		switch($part->type) {
 		
-			case 0:	//	Type 0 : text
-				if($part->parameters[1]->value != "banniere.txt") { //	Supprime l'entête d'Orange
-					//	echo $part->parameters[1]->value . "<br />";
-					
+			case 0:	
+				if($part->parameters[1]->value != "banniere.txt") { //	Supprime l'entÃªte d'Orange
 					$data[$partNo]['type'] = 'text';
 					$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, Imap::fetch_options));
-					
-					// $file = fopen("/home/remi/www/mails/".$part->parameters[1]->value, "w");
-					// fwrite($file, $data[$partNo]['data']);
-					// fclose($file);
 				}
 				break;				
-				
-			//	Type 1 : multipart
-								
-			//	Type 2 : message
-								
-			//	Type 3 : application
-								
-			case 4:	//	Type 4 : audio
-				//	echo $part->parameters[0]->value ."<br />";
-				
+			
+			case 4:
 				$post_parameters['type'] = $data[$partNo]['type'] = 'audio';
-				$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, $fetch_options));
-				
-				// $file = fopen("/home/remi/www/mails/".$part->parameters[0]->value, "w");
-				// fwrite($file, $data[$partNo]['data']);
-				// fclose($file);
+				$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, Imap::fetch_options));
 				break;
-								
-			case 5:	//	Type 5 : image
-				if($part->parameters[0]->value != "logo.gif") {	//	Enlève le logo d'Orange
-					//	echo $part->parameters[0]->value ."<br />";
-					
+			
+			case 5:
+				if($part->parameters[0]->value != "logo.gif") {	//	EnlÃ¨ve le logo d'Orange
 					$post_parameters['type'] = $data[$partNo]['type'] = 'photo';
-					$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, $fetch_options));
-				
-					// $file = fopen("/home/remi/www/mails/".$part->parameters[0]->value, "w");
-					// fwrite($file, $data[$partNo]['data']);
-					// fclose($file);
+					$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, Imap::fetch_options));
 				}
 				break;
-								
-			case 6:	//	Type 6 : video
-				//	echo $part->parameters[0]->value ."<br />";
-				
+			
+			case 6:
 				$post_parameters['type'] = $data[$partNo]['type'] = 'video';
-				$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, $fetch_options));
-				
-				// $file = fopen("/home/remi/www/mails/".$part->parameters[0]->value, "w");
-				// fwrite($file, $data[$partNo]['data']);
-				// fclose($file);
+				$data[$partNo]['data'] = base64_decode(imap_fetchbody($imap, $msgNo, $partNo + 1, Imap::fetch_options));
 				break;
-								
-			//	Type 7 : other
 		}
 	}
 	
 	if(!isset($post_parameters['type'])) {
 		$post_parameters['type'] = "text";
+		if(isset($subject)) {$post_parameters['title'] = $subject;} // On ne peut faire passer un titre seulement avec un post texte
 	}
 	
-	if(isset($subject) && $post_parameters['type'] == "text") {
-		$post_parameters['title'] = $subject;
-	}
-	// A ce stade, on a toutes les données qui nous intéressent dans $data, et le type de post dans $post_parameters['type']
+	// A ce stade, on a toutes les donnÃ©es qui nous intÃ©ressent dans $data, et le type de post dans $post_parameters['type']
 	
 	foreach($data as $pdata) {
 		switch($pdata['type']) {
 			
 			case "text":
 				if($post_parameters['type'] == "text") {
-					if(!empty($post_parameters['body'])) {
-						$post_parameters['body'] = $post_parameters['body'] . "<br />" . $pdata['data'];	// On rajoute à la suite
-					}
-					else {
-						$post_parameters['body'] = $pdata['data'];
-					}
+					if(!empty($post_parameters['body'])) 
+						{$post_parameters['body'] .= "<br />" . $pdata['data'];}	// On rajoute Ã  la suite
+					else
+						{$post_parameters['body'] = $pdata['data'];}
 				}
 				else {
-					if(!empty($post_parameters['caption'])) {
-						$post_parameters['caption'] = $post_parameters['caption'] . "<br />" . $pdata['data'];	// On rajoute à la suite
-					}
-					else {
-						$post_parameters['caption'] = $pdata['data'];
-					}
+					if(!empty($post_parameters['caption']))
+						{$post_parameters['caption'] .= "<br />" . $pdata['data'];}	// On rajoute Ã  la suite
+					else
+						{$post_parameters['caption'] = $pdata['data'];}
 				}
 				break;
 			
@@ -167,7 +141,7 @@ foreach($structures as $msgNo => $structure) {
 	  //	die('Unable to post : '. $tum_oauth->http_code);
 	}
 	
-	//	On remet les variables à 0 pour les prochains mails
+	//	On remet les variables Ã  0 pour les prochains mails
 	
 	$post_parameters = NULL;
 	$data = NULL;

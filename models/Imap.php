@@ -11,7 +11,7 @@ class Imap {
 	const fetch_options = FT_PEEK;
 	
 	static function open() {
-		$mailbox = '{' . Imap::server . ':'.Imap::port.Imap::imap_params.'}INBOX';;
+		$mailbox = '{' . Imap::server . ':'.Imap::port.Imap::imap_params.'}INBOX';
 		return imap_open($mailbox, Imap::username, Imap::password);
 	}
 }

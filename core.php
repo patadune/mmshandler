@@ -1,8 +1,11 @@
 <?php
 
-require_once('config.php');
+define('ROOT', str_replace('mmshandler.php', '', $_SERVER['SCRIPT_FILENAME']));
 
-require_once('models/Imap.php');
+require_once(ROOT.'config.php');
 
-require_once('models/TumblrOAuth.php');
+require_once(ROOT.'models/Model.php');
+
+Model::load('Imap');
+
 ?>
