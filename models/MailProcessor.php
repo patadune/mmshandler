@@ -14,6 +14,7 @@ class MailProcessor {
 	
 	private $imapStream = null;
 	private $tumblrOAuth = null;
+	
 	private $debug = false;
 
 	public function __construct() {
@@ -186,7 +187,7 @@ class MailProcessor {
 		}
 	}
 	
-	public function getStructures() { return $this->structures;}
+	public function getStructures() {return $this->structures;}
 	
 	public function __destruct() {
 		imap_close($this->imapStream);
