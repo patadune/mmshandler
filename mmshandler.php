@@ -11,6 +11,7 @@ foreach($mp->getStructures() as $msgNo => $structure) { //	Boucle principale, un
 	$mp->processMailParts($msgNo, $structure);
 	$mp->definePostType();
 	$mp->MailToPost();
+	$mp->setTweet("off");
 	$mp->sendPost();
 	$mp->clearVars();
 }

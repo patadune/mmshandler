@@ -189,6 +189,8 @@ class MailProcessor {
 	
 	public function getStructures() {return $this->structures;}
 	
+	public function setTweet() {$this->post_parameters['tweet'] = "off";}
+	
 	public function __destruct() {
 		imap_close($this->imapStream);
 		if($this->debug) {$this->listChosenMails();}
