@@ -40,7 +40,7 @@ class MailProcessor {
 		$headers = imap_headerinfo($this->imapStream, $msgNo);
 		$values = explode(',', $value);
 		foreach($values as $v) {
-			$this->headers[$v] = $headers->$v;
+			if(isset($headers->$v)) {$this->headers[$v] = $headers->$v;}
 		}
 		//	if($this->debug){print_r($headers);}
 		return 0;
@@ -72,30 +72,34 @@ class MailProcessor {
 			
 				case 0:	
 					if($part->parameters[1]->value != "banniere.txt") { //	Supprime l'entête d'Orange
+						$this->data[$partNo]['id'] = $partNo;
 						$this->data[$partNo]['type'] = 'text';
 						$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
 					}
 					break;				
 				
 				case 4:
-					$this->post_parameters['type'] = $this->data[$partNo]['type'] = 'audio';
+					$this->data[$partNo]['id'] = $partNo;
+					$this->data[$partNo]['type'] = 'audio';
 					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
 					break;
 				
 				case 5:
 					if($part->parameters[0]->value != "logo.gif") {	//	Enlève le logo d'Orange
-						$this->post_parameters['type'] = $this->data[$partNo]['type'] = 'photo';
+						$this->data[$partNo]['id'] = $partNo;
+						$this->data[$partNo]['type'] = 'photo';
 						$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
 					}
 					break;
 				
 				case 6:
-					$this->post_parameters['type'] = $this->data[$partNo]['type'] = 'video';
+					$this->data[$partNo]['id'] = $partNo;
+					$this->data[$partNo]['type'] = 'video';
 					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
 					break;
 			}
 		}
-		//	if($this->debug){print_r($this->data);}
+		if($this->debug){print_r($this->data);}
 	}
 	
 	// @return $data[][]
@@ -131,7 +135,7 @@ class MailProcessor {
 					break;
 				
 				case "photo":
-					$this->post_parameters['data'][] = $d['data'];
+					$this->post_parameters['data'] = $d['data'];
 					break;
 					
 				case "audio":
@@ -150,8 +154,8 @@ class MailProcessor {
 	
 	public function sendPost() {
 		
-		require_once(ROOT."config.php");
-	
+		require(ROOT."config.php");
+		
 		if(empty($this->tumblrOAuth)) {
 			Model::load('TumblrOAuth');
 			$this->tumblrOAuth = new TumblrOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
@@ -164,6 +168,7 @@ class MailProcessor {
 			$this->msgProcessed++;
 			imap_setflag_full($this->imapStream, $this->msgNo, "\\Seen");
 		}
+		echo $this->tumblrOAuth->http_code;
 	}
 	
 	public function clearVars() {
@@ -186,7 +191,7 @@ class MailProcessor {
 	public function __destruct() {
 		imap_close($this->imapStream);
 		if($this->debug) {$this->listChosenMails();}
-		else {/* Retour standard pour log cron */}
+		else {echo $this->msgProcessed ." MMS Proceeded !";}
 	}
 }
 
