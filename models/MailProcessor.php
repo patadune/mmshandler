@@ -169,7 +169,6 @@ class MailProcessor {
 			$this->msgProcessed++;
 			imap_setflag_full($this->imapStream, $this->msgNo, "\\Seen");
 		}
-		echo $this->tumblrOAuth->http_code;
 	}
 	
 	public function clearVars() {
@@ -189,7 +188,7 @@ class MailProcessor {
 	
 	public function getStructures() {return $this->structures;}
 	
-	public function setTweet() {$this->post_parameters['tweet'] = "off";}
+	public function setTweet($value) {$this->post_parameters['tweet'] = $value;}
 	
 	public function __destruct() {
 		imap_close($this->imapStream);
