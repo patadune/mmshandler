@@ -2,7 +2,9 @@
 
 class MailProcessor {
 	
-	private $structures = array(); // Les métadonnés du mail
+	private $structures = array(); // Les métadonnés des mails
+	
+	private $msgNo = 0;
 	private $data = array(); // Les données du mail
 	private $post_parameters = array(); // Les données transmises à l'API
 	private $headers = array(); // Les en-têtes du mail (utiles pour récupérer objet, expéditeur, etc.)
@@ -11,6 +13,8 @@ class MailProcessor {
 	private $msgProcessed = 0;
 	
 	private $imapStream = null;
+	private $tumblrOAuth = null;
+	private $debug = false;
 
 	public function __construct() {
 		Model::load('Imap');
@@ -18,44 +22,172 @@ class MailProcessor {
 		$this->msgNbr = imap_num_msg($this->imapStream);
 	}
 	
-	public function getStructures($sender = "MAILSENDER") { 
+	public function fetchStructures($sender = "MAILSENDER") { 
 		
-		for($i = 0; $i < $this->msgNbr; $i++) {
+		for($msgNo = 1; $msgNo <= $this->msgNbr; $msgNo++) {
 		
-			$this->getHeaderInfo($i + 1, "senderaddress,Unseen");
+			$this->fetchHeaders($msgNo, "senderaddress,Unseen");
 			
 			if($this->headers['senderaddress'] == $sender && $this->headers['Unseen'] == "U") {
-				$this->structures[$i + 1] = imap_fetchstructure($this->imapStream, $i + 1);
+				$this->structures[$msgNo] = imap_fetchstructure($this->imapStream, $msgNo);
 			}
 		}
+		return 0;
 	}
 	
-	public function getHeaderInfo($msgNo, $value) {
+	public function fetchHeaders($msgNo, $value) {
 		
 		$headers = imap_headerinfo($this->imapStream, $msgNo);
 		$values = explode(',', $value);
 		foreach($values as $v) {
 			$this->headers[$v] = $headers->$v;
 		}
-		print_r($headers);
+		//	if($this->debug){print_r($headers);}
+		return 0;
 	}
 	
-	public function processMailParts() { }
+	public function processMailParts($msgNo, $structure) { 
+		
+		$this->msgNo = $msgNo;
+		$this->fetchHeaders($msgNo, "subject");
+		
+		foreach($structure->parts as $partNo => $part) {
+		
+		/**
+		 *	Types des parties de mails
+		 *	==========================
+		 *
+		 *	*Type 0 : text
+		 *	Type 1 : multipart
+		 *	Type 2 : message
+		 *	Type 3 : application
+		 *	*Type 4 : audio
+		 *	*Type 5 : image
+		 *	*Type 6 : video
+		 *	Type 7 : other
+		 *
+		 **/
+		
+			switch($part->type) {
+			
+				case 0:	
+					if($part->parameters[1]->value != "banniere.txt") { //	Supprime l'entête d'Orange
+						$this->data[$partNo]['type'] = 'text';
+						$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
+					}
+					break;				
+				
+				case 4:
+					$this->post_parameters['type'] = $this->data[$partNo]['type'] = 'audio';
+					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
+					break;
+				
+				case 5:
+					if($part->parameters[0]->value != "logo.gif") {	//	Enlève le logo d'Orange
+						$this->post_parameters['type'] = $this->data[$partNo]['type'] = 'photo';
+						$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
+					}
+					break;
+				
+				case 6:
+					$this->post_parameters['type'] = $this->data[$partNo]['type'] = 'video';
+					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
+					break;
+			}
+		}
+		//	if($this->debug){print_r($this->data);}
+	}
 	
 	// @return $data[][]
 	
-	public function definePostType() { }
+	public function definePostType() {
+		
+		$this->post_parameters['type'] = "text";
+		foreach($this->data as $d) {
+			if($d['type'] != "text") {
+				$this->post_parameters['type'] = $d['type'];
+			}
+		}
+		//	if($this->debug){print_r($this->post_parameters);}
+	}
 	
 	
-	public function MailToPost() { }
+	public function MailToPost() { 
+	
+		if((isset($this->headers['subject'])) && $this->post_parameters['type'] == "text") {
+			$this->post_parameters['title'] = $this->headers['subject'];
+		}
+		
+		foreach($this->data as $d) {
+			switch($d['type']) {
+				
+				case "text":
+					if($this->post_parameters['type'] == "text") {$textField = "body";}
+					else {$textField = "caption";}
+						
+						if(!empty($this->post_parameters[$textField])) 
+							{$this->post_parameters[$textField] .= "<br />" . $d['data'];}	// On rajoute à la suite
+						else {$this->post_parameters[$textField] = $d['data'];}
+					break;
+				
+				case "photo":
+					$this->post_parameters['data'][] = $d['data'];
+					break;
+					
+				case "audio":
+					$this->post_parameters['data'] = $d['data'];
+					break;
+					
+				case "video":
+					$this->post_parameters['data'] = $d['data'];
+					break;
+			}
+		}
+		if($this->debug){print_r($this->post_parameters);}
+	}
 	
 	// @return $post_parameters[]
 	
-	public function sendPost() { }
+	public function sendPost() {
+		
+		require_once(ROOT."config.php");
 	
-	public function clearVars() { }
+		if(empty($this->tumblrOAuth)) {
+			Model::load('TumblrOAuth');
+			$this->tumblrOAuth = new TumblrOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
+		}
+		
+		$url = "http://api.tumblr.com/v2/blog/$blog_name/post";
+		$blog_post = $this->tumblrOAuth->post($url, $this->post_parameters);
+		
+		if (201 == $this->tumblrOAuth->http_code) {
+			$this->msgProcessed++;
+			imap_setflag_full($this->imapStream, $this->msgNo, "\\Seen");
+		}
+	}
 	
-	public function status() { }
+	public function clearVars() {
+		$this->structures = $this->data = $this->post_parameters = $this->headers = array();
+		$this->msgNo = 0;
+	}
+	
+	public function debugMode($v) {if(is_bool($v)){$this->debug = $v;}}
+	
+	public function listChosenMails() {
+		
+		foreach($this->structures as $msgNo => $structure) {
+			echo "<pre>";
+			echo "<h3>Mail n°" . $msgNo . " !</h3>";
+		}
+	}
+	
+	public function getStructures() { return $this->structures;}
+	
+	public function __destruct() {
+		imap_close($this->imapStream);
+		if($this->debug) {$this->listChosenMails();}
+		else {/* Retour standard pour log cron */}
+	}
 }
 
 ?>
