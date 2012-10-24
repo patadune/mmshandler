@@ -120,7 +120,7 @@ class MailProcessor {
 	public function MailToPost() { 
 	
 		if((isset($this->headers['subject'])) && $this->post_parameters['type'] == "text") {
-			$this->post_parameters['title'] = $this->headers['subject'];
+			$this->post_parameters['title'] = iconv_mime_decode($this->headers['subject']);
 		}
 		
 		foreach($this->data as $d) {
