@@ -12,10 +12,13 @@ class Model {
         }
     }
 	
-	static function loadConfig($section, $f = CONFIG_FILE) {
+	// loadConfig permet de charger tout ou partie du fichier de configuration défini par défaut dans la constante CONFIG_FILE
+	
+	static function loadConfig($section = null, $f = CONFIG_FILE) {
 		
 		$config = parse_ini_file($f, true);
-		return $config[$section];
+		if(empty($section)) { return $config; } 
+		else { return $config[$section]; }
 	}
 }
 ?>
