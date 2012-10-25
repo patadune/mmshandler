@@ -56,16 +56,25 @@ class TumblrOAuth {
   /**
    * construct TumblrOAuth object
    */
-  function __construct($consumer_key, $consumer_secret, $oauth_token = NULL, $oauth_token_secret = NULL) {
+  // function __construct($consumer_key, $consumer_secret, $oauth_token = NULL, $oauth_token_secret = NULL) {
+    // $this->sha1_method = new OAuthSignatureMethod_HMAC_SHA1();
+    // $this->consumer = new OAuthConsumer($consumer_key, $consumer_secret);
+    // if (!empty($oauth_token) && !empty($oauth_token_secret)) {
+      // $this->token = new OAuthConsumer($oauth_token, $oauth_token_secret);
+    // } else {
+      // $this->token = NULL;
+    // }
+  // }
+
+  function __construct($keys) {
     $this->sha1_method = new OAuthSignatureMethod_HMAC_SHA1();
-    $this->consumer = new OAuthConsumer($consumer_key, $consumer_secret);
-    if (!empty($oauth_token) && !empty($oauth_token_secret)) {
-      $this->token = new OAuthConsumer($oauth_token, $oauth_token_secret);
+    $this->consumer = new OAuthConsumer($keys['consumer_key'], $key['consumer_secret']);
+    if (!empty($keys['access_token']) && !empty($keys['access_token_secret'])) {
+      $this->token = new OAuthConsumer($keys['access_token'], $keys['access_token_secret']);
     } else {
       $this->token = NULL;
     }
   }
-
 
   /**
    * Get a request_token from Tumblr

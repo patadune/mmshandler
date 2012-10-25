@@ -157,11 +157,9 @@ class MailProcessor {
 	
 	public function sendPost() {
 		
-		require(ROOT."config.php");
-		
 		if(empty($this->tumblrOAuth)) {
 			Model::load('TumblrOAuth');
-			$this->tumblrOAuth = new TumblrOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
+			$this->tumblrOAuth = new TumblrOAuth(Model::loadConfig('oauth'));
 		}
 		
 		$url = "http://api.tumblr.com/v2/blog/$blog_name/post";
