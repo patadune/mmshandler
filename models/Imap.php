@@ -3,7 +3,7 @@ class Imap {
     
 	private $config = array();
 	
-	private $fetch_options = FT_PEEK;
+	const fetch_options = FT_PEEK;
 	private $imap_params = "/imap/ssl";
 	
 	public function __construct() {	$this->config = Model::loadConfig('imap'); }
