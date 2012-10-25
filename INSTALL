@@ -1,0 +1,4 @@
+INSTALLATION
+************
+
+Ne pas oublier de bloquer l'accès aux fichiers .ini sur votre serveur web (si toutefois vous exposez votre script, ce qui n'est pas conseillé)
