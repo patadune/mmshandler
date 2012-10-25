@@ -12,6 +12,7 @@ class MailProcessor {
 	private $msgNbr = 0;
 	private $msgProcessed = 0;
 	
+	private $imap = null;
 	private $imapStream = null;
 	private $tumblrOAuth = null;
 	
@@ -19,7 +20,8 @@ class MailProcessor {
 
 	public function __construct() {
 		Model::load('Imap');
-		$this->imapStream = Imap::open();
+		$this->imap = new Imap();
+		$this->imapStream = $this->imap->open();
 		$this->msgNbr = imap_num_msg($this->imapStream);
 	}
 	

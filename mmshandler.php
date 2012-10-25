@@ -1,6 +1,8 @@
 <?php
 require_once('core.php');
 
+define('CONFIG_FILE', ROOT.'config.ini');
+
 Model::load('MailProcessor');
 $mp = new MailProcessor();
 //$mp->debugMode(true);

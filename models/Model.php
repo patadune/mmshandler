@@ -11,5 +11,11 @@ class Model {
             echo "Class not found !";
         }
     }
-    
+	
+	static function loadConfig($section, $f = CONFIG_FILE) {
+		
+		$config = parse_ini_file($f, true);
+		return $config[$section];
+	}
 }
+?>
