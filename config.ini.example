@@ -1,0 +1,14 @@
+[imap]
+server = 
+port = 
+username = 
+password = 
+
+[oauth]
+blog_name = 
+consumer_key = 
+consumer_secret = 
+request_token = 
+request_token_secret = 
+access_token = 
+access_token_secret = 
