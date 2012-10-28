@@ -1,3 +1,6 @@
+[MailProcessor]
+sender = 
+
 [imap]
 server = 
 port = 

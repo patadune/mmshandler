@@ -2,6 +2,8 @@
 
 class MailProcessor {
 	
+	private $config = array(); // Contient la config générale définie dans config.ini
+	
 	private $structures = array(); // Les métadonnés des mails
 	
 	private $msgNo = 0;
@@ -20,18 +22,19 @@ class MailProcessor {
 
 	public function __construct() {
 		Model::load('Imap');
+		$this->config = Model::loadConfig('MailProcessor');
 		$this->imap = new Imap();
 		$this->imapStream = $this->imap->open();
 		$this->msgNbr = imap_num_msg($this->imapStream);
 	}
 	
-	public function fetchStructures($sender = "MAILSENDER") { 
+	public function fetchStructures() { 
 		
 		for($msgNo = 1; $msgNo <= $this->msgNbr; $msgNo++) {
 		
 			$this->fetchHeaders($msgNo, "senderaddress,Unseen");
 			
-			if($this->headers['senderaddress'] == $sender && $this->headers['Unseen'] == "U") {
+			if($this->headers['senderaddress'] == $this->config['mail_sender'] && $this->headers['Unseen'] == "U") {
 				$this->structures[$msgNo] = imap_fetchstructure($this->imapStream, $msgNo);
 			}
 		}
