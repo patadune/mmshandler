@@ -71,7 +71,9 @@ class TumblrOAuth {
     $this->consumer = new OAuthConsumer($keys['consumer_key'], $keys['consumer_secret']);
     if (!empty($keys['access_token']) && !empty($keys['access_token_secret'])) {
       $this->token = new OAuthConsumer($keys['access_token'], $keys['access_token_secret']);
-    } else {
+    } elseif(!empty($keys['request_token']) && !empty($keys['request_token_secret'])) {
+	  $this->token = new OAuthConsumer($keys['request_token'], $keys['request_token_secret']);
+	} else {
       $this->token = NULL;
     }
   }
