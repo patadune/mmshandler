@@ -160,7 +160,7 @@ class MailProcessor {
 	
 	public function sendPost() {
 		
-		$tumblrConfig = Model::loadConfig('oauth');
+		$tumblrConfig = Model::loadConfig('OAuth');
 		
 		if(empty($this->tumblrOAuth)) {
 			Model::load('TumblrOAuth');

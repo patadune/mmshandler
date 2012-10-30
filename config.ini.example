@@ -1,13 +1,13 @@
 [MailProcessor]
 sender = 
 
-[imap]
+[Imap]
 server = 
 port = 
 username = 
 password = 
 
-[oauth]
+[OAuth]
 blog_name = 
 consumer_key = 
 consumer_secret = 

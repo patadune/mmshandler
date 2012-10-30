@@ -81,7 +81,7 @@ $_SESSION['blog_name'] = $userinfo->response->user->name.".tumblr.com";
 ?>
 <p>A copier dans le fichier config.ini :</p>
 <pre>
-[oauth]<br />
+[OAuth]<br />
 <?php
 foreach($_SESSION as $k => $v) {
 	echo $k.' = "'.$v.'"<br />';
