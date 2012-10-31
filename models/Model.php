@@ -16,7 +16,8 @@ class Model {
 	
 	static function loadConfig($section = null, $f = CONFIG_FILE) {
 		
-		$config = parse_ini_file($f, true);
+		$config = parse_ini_file($f, true); // Retourne la config en prenant compte des sections sous forme d'un array
+		
 		if(empty($section)) { return $config; } 
 		else { return $config[$section]; }
 	}

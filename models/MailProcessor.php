@@ -54,11 +54,6 @@ class MailProcessor {
 	
 	public function processMailParts($msgNo, $structure) { 
 		
-		$this->msgNo = $msgNo;
-		$this->fetchHeaders($msgNo, "subject");
-		
-		foreach($structure->parts as $partNo => $part) {
-		
 		/**
 		 *	Types des parties de mails
 		 *	==========================
@@ -73,8 +68,33 @@ class MailProcessor {
 		 *	Type 7 : other
 		 *
 		 **/
+		 
+		$partsTypeAllowed = array(0 => 'text',
+								  4 => 'audio',
+								  5 => 'photo',
+								  6 => 'video');
 		
-			switch($part->type) {
+		$this->msgNo = $msgNo;
+		$this->fetchHeaders($msgNo, "subject");
+		
+		foreach($structure->parts as $partNo => $part) {
+							
+			if(!empty($partsTypeAllowed[$part->type])) {
+			
+				$typename = $partsTypeAllowed[$part->type];
+				$exclude = $this->config[$typename.".exclude"];
+				
+				if($part->type == 0) { $partFilename = $part->parameters[1]->value; }	// Récupère le nom de fichier des parties du mail pour
+				else { $partFilename = $part->parameters[0]->value; }					// comparaison (pas au même endroit selon le type, weird)
+				
+				if($partFilename != $exclude) {
+					$this->data[$partNo]['id'] = $partNo;
+					$this->data[$partNo]['type'] = $typename;
+					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
+				}
+			}
+		}
+		/*	switch($part->type) {
 			
 				case 0:	
 					if($part->parameters[1]->value != "banniere.txt") { //	Supprime l'entête d'Orange
@@ -103,8 +123,7 @@ class MailProcessor {
 					$this->data[$partNo]['type'] = 'video';
 					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
 					break;
-			}
-		}
+			}   */
 		if($this->debug){print_r($this->data);}
 	}
 	

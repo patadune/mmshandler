@@ -1,5 +1,7 @@
 [MailProcessor]
 sender = 
+text.exclude =
+photo.exclude = 
 
 [Imap]
 server = 
