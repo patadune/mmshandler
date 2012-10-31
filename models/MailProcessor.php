@@ -94,37 +94,7 @@ class MailProcessor {
 				}
 			}
 		}
-		/*	switch($part->type) {
-			
-				case 0:	
-					if($part->parameters[1]->value != "banniere.txt") { //	Supprime l'entête d'Orange
-						$this->data[$partNo]['id'] = $partNo;
-						$this->data[$partNo]['type'] = 'text';
-						$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
-					}
-					break;				
-				
-				case 4:
-					$this->data[$partNo]['id'] = $partNo;
-					$this->data[$partNo]['type'] = 'audio';
-					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
-					break;
-				
-				case 5:
-					if($part->parameters[0]->value != "logo.gif") {	//	Enlève le logo d'Orange
-						$this->data[$partNo]['id'] = $partNo;
-						$this->data[$partNo]['type'] = 'photo';
-						$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
-					}
-					break;
-				
-				case 6:
-					$this->data[$partNo]['id'] = $partNo;
-					$this->data[$partNo]['type'] = 'video';
-					$this->data[$partNo]['data'] = base64_decode(imap_fetchbody($this->imapStream, $msgNo, $partNo + 1, Imap::fetch_options));
-					break;
-			}   */
-		if($this->debug){print_r($this->data);}
+		if($this->debug){ print_r($this->data); }
 	}
 	
 	// @return $data[][]
@@ -142,7 +112,9 @@ class MailProcessor {
 	
 	
 	public function MailToPost() { 
-	
+		
+		// Utilise le sujet du mail (si défini) comme titre du post, mais uniquement si c'est un post texte
+		
 		if((isset($this->headers['subject'])) && $this->post_parameters['type'] == "text") {
 			$this->post_parameters['title'] = iconv_mime_decode($this->headers['subject']);
 		}
@@ -176,6 +148,15 @@ class MailProcessor {
 	}
 	
 	// @return $post_parameters[]
+	
+	public function fetchCommands() {
+		
+		Model::Load('CommandProcessor');
+		if($this->post_parameters['type'] == "text") {$textField = "body";}
+		else {$textField = "caption";}
+		$cmds = new CommandProcessor($this->post_parameters[$textField]);
+		$this->post_parameters[$textField] = $cmds->fetchCommands();
+	}
 	
 	public function sendPost() {
 		
