@@ -17,11 +17,11 @@ class CommandProcessor {
 		$this->textData = $textData;
 	}
 
-	public function fetchCommands() {
+	public function processCommands() {
 		
 		preg_match('/\[(.+)\]/', $this->textData, $matches);
 		$this->textData = str_replace($matches[0], '', $this->textData);
-		$this->commands = $matches[1];
+		$this->commands = str_split($matches[1]);
 		trim($this->textData);
 		return $this->textData;
 	}

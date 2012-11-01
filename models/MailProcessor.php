@@ -155,7 +155,7 @@ class MailProcessor {
 		if($this->post_parameters['type'] == "text") {$textField = "body";}
 		else {$textField = "caption";}
 		$cmds = new CommandProcessor($this->post_parameters[$textField]);
-		$this->post_parameters[$textField] = $cmds->fetchCommands();
+		$this->post_parameters[$textField] = $cmds->processCommands();
 	}
 	
 	public function sendPost() {
