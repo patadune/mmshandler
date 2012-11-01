@@ -8,8 +8,6 @@
  *
  */
 
-class PhotoProcessor {
-
+class PhotoProcessor
+{
 }
-
-?>

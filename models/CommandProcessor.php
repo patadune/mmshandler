@@ -8,22 +8,23 @@
  *
  */
 
-class CommandProcessor {
+class CommandProcessor
+{
+    private $textData;
+    private $commands;
 
-	private $textData;
-	private $commands;
+    public function __construct($textData)
+    {
+        $this->textData = $textData;
+    }
 
-	public function __construct($textData) {
-		$this->textData = $textData;
-	}
+    public function processCommands()
+    {
+        preg_match('/\[(.+)\]/', $this->textData, $matches);
+        $this->textData = str_replace($matches[0], '', $this->textData);
+        $this->commands = str_split($matches[1]);
+        trim($this->textData);
 
-	public function processCommands() {
-		
-		preg_match('/\[(.+)\]/', $this->textData, $matches);
-		$this->textData = str_replace($matches[0], '', $this->textData);
-		$this->commands = str_split($matches[1]);
-		trim($this->textData);
-		return $this->textData;
-	}
+        return $this->textData;
+    }
 }
-?>

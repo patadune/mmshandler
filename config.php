@@ -11,16 +11,16 @@
 <?php
 
 session_start();
-require_once('models/TumblrOAuth.php');
+require_once 'models/TumblrOAuth.php';
 
 if(empty($_POST) && empty($_GET)):
 
 ?>
 
 <form action="config.php" method="post">
-	<input type="text" name="consumer_key"> Clé consumer<br />
-	<input type="text" name="consumer_secret"> Clé secrète consumer<br />
-	<input type="submit" value="Envoyer">
+    <input type="text" name="consumer_key"> Clé consumer<br />
+    <input type="text" name="consumer_secret"> Clé secrète consumer<br />
+    <input type="submit" value="Envoyer">
 
 <?php
 
@@ -36,19 +36,17 @@ $_SESSION['request_token_secret'] = $request_token['oauth_token_secret'];
 
 switch ($tum_oauth->http_code) {
   case 200:
-  
+
     $url = $tum_oauth->getAuthorizeURL($token);
-	
+
     header('Location: ' . $url);
-	
+
     break;
   default:
-  
-	echo "Une erreur est survenue.";
-	break;
-}
 
-else:
+    echo "Une erreur est survenue.";
+    break;
+} else:
 
 $tum_oauth = new TumblrOAuth($_SESSION);
 $access_token = $tum_oauth->getAccessToken($_GET['oauth_verifier']);
@@ -83,12 +81,11 @@ $_SESSION['blog_name'] = $userinfo->response->user->name.".tumblr.com";
 <pre>
 [OAuth]<br />
 <?php
-foreach($_SESSION as $k => $v) {
-	echo $k.' = "'.$v.'"<br />';
+foreach ($_SESSION as $k => $v) {
+    echo $k.' = "'.$v.'"<br />';
 }
 
 endif;
-
 
 ?>
 
