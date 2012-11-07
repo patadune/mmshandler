@@ -18,8 +18,6 @@ class MailProcessor
     private $imapStream = null;
     private $tumblrOAuth = null;
 
-    private $debug = false;
-
     public function __construct()
     {
         Model::load('Imap');
@@ -50,7 +48,6 @@ class MailProcessor
         foreach ($values as $v) {
             if (isset($headers->$v)) {$this->headers[$v] = $headers->$v;}
         }
-        //	if ($this->debug) {print_r($headers);}
         return 0;
     }
 
@@ -96,7 +93,6 @@ class MailProcessor
                 }
             }
         }
-        if ($this->debug) { print_r($this->data); }
     }
 
     // @return $data[][]
@@ -109,7 +105,6 @@ class MailProcessor
                 $this->post_parameters['type'] = $d['type'];
             }
         }
-        //	if ($this->debug) {print_r($this->post_parameters);}
     }
 
 
@@ -144,7 +139,6 @@ class MailProcessor
                     break;
             }
         }
-        if ($this->debug) {print_r($this->post_parameters);}
     }
 
     // @return $post_parameters[]
@@ -181,8 +175,6 @@ class MailProcessor
         $this->msgNo = 0;
     }
 
-    public function debugMode($v) {if (is_bool($v)) {$this->debug = $v;}}
-
     public function listChosenMails()
     {
         foreach ($this->structures as $msgNo => $structure) {
@@ -198,6 +190,6 @@ class MailProcessor
     public function __destruct()
     {
         imap_close($this->imapStream);
-        if ($this->debug) {$this->listChosenMails();} else {echo $this->msgProcessed ." MMS Proceeded !";}
+        echo $this->msgProcessed ." MMS Proceeded !";
     }
 }
